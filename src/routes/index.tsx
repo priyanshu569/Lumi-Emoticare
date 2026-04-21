@@ -3,14 +3,6 @@ import { AppShell } from "@/components/AppShell";
 import { ArrowRight, Heart, ShieldCheck, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Lumi — A gentle space for how you feel" },
-      { name: "description", content: "Lumi senses your emotions and gently supports your wellbeing — no pressure, no judgment." },
-      { property: "og:title", content: "Lumi — A gentle space for how you feel" },
-      { property: "og:description", content: "An AI companion for everyday emotional wellbeing." },
-    ],
-  }),
   component: WelcomePage,
 });
 
@@ -44,7 +36,6 @@ function WelcomePage() {
         </p>
       </section>
 
-      {/* Animated breathing orb */}
       <div className="relative mx-auto mt-12 grid h-56 w-56 place-items-center">
         <div
           className="absolute inset-0 rounded-full animate-pulse-ring"
@@ -52,7 +43,10 @@ function WelcomePage() {
         />
         <div
           className="absolute inset-4 rounded-full animate-pulse-ring"
-          style={{ background: "color-mix(in oklab, var(--mood-calm) 60%, transparent)", animationDelay: "0.8s" }}
+          style={{
+            background: "color-mix(in oklab, var(--mood-calm) 60%, transparent)",
+            animationDelay: "0.8s",
+          }}
         />
         <div className="relative grid h-40 w-40 place-items-center rounded-full bg-surface shadow-neu animate-breathe">
           <Sparkles className="h-10 w-10 text-primary" />
@@ -62,17 +56,17 @@ function WelcomePage() {
       <div className="mt-12 space-y-3">
         <Link
           to="/scan"
-          className="group flex items-center justify-between rounded-full bg-foreground px-7 py-5 text-background shadow-glow transition-transform hover:scale-[1.01] active:scale-[0.99]"
+          className="group flex items-center justify-between rounded-full bg-foreground px-7 py-5 text-background shadow-glow"
         >
           <span className="text-base font-semibold">Begin a check-in</span>
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-background/15 transition-transform group-hover:translate-x-1">
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-background/15">
             <ArrowRight className="h-5 w-5" />
           </span>
         </Link>
 
         <Link
           to="/dashboard"
-          className="flex items-center justify-center gap-2 rounded-full border border-border/60 bg-surface/60 px-7 py-4 text-sm font-medium text-foreground backdrop-blur transition hover:bg-surface"
+          className="flex items-center justify-center rounded-full border border-border/60 px-7 py-4 text-sm"
         >
           See your mood journey
         </Link>
