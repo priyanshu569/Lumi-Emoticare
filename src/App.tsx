@@ -1,11 +1,6 @@
-import BottomNav from "./components/BottomNav";
-import Home from "./Home";
+import { RouterProvider } from "@tanstack/react-router";
+import { router } from "./router";
 
 export default function App() {
-  return (
-    <div>
-      <Home />
-      <BottomNav />
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
