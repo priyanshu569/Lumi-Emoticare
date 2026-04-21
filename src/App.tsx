@@ -1,9 +1,10 @@
 import BottomNav from "./components/BottomNav";
+import Home from "./Home";
 
 export default function App() {
   return (
     <div>
-      <h1>Lumi Emoticare 🚀</h1>
+      <Home />
       <BottomNav />
     </div>
   );
