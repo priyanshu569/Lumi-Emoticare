@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, Heart, ShieldCheck, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/")({
 });
 
 function WelcomePage() {
+  const { user, loading } = useAuth();
   const hour = new Date().getHours();
   const greeting =
     hour < 5
@@ -38,9 +40,16 @@ function WelcomePage() {
           </div>
           <span className="font-display text-lg font-semibold">Lumi</span>
         </div>
-        <Link to="/settings" className="text-xs text-muted-foreground hover:text-foreground">
-          Privacy first ·
-        </Link>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <Link to="/settings" className="hover:text-foreground">
+            Privacy first
+          </Link>
+          {!loading && !user && (
+            <Link to="/login" className="font-medium text-primary hover:opacity-80">
+              Sign in
+            </Link>
+          )}
+        </div>
       </header>
 
       <section className="mt-12">
@@ -93,7 +102,7 @@ function WelcomePage() {
 
       <div className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <ShieldCheck className="h-3.5 w-3.5" />
-        <span>Everything stays on your device. Always.</span>
+        <span>Your camera never leaves your device. Only your mood is saved.</span>
       </div>
     </AppShell>
   );

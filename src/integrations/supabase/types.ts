@@ -8,7 +8,30 @@ export type Database = {
   };
   public: {
     Tables: {
-      [_ in never]: never;
+      mood_entries: {
+        Row: {
+          id: string;
+          user_id: string;
+          mood: "happy" | "sad" | "angry" | "neutral";
+          confidence: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          mood: "happy" | "sad" | "angry" | "neutral";
+          confidence?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          mood?: "happy" | "sad" | "angry" | "neutral";
+          confidence?: number | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

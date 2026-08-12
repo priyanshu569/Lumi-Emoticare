@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { Lock, Eye, BellRing, Trash2, Cloud, Fingerprint, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { Lock, Eye, BellRing, Trash2, Cloud, Fingerprint, ShieldCheck, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -19,10 +21,17 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [onDevice, setOnDevice] = useState(true);
-  const [save, setSave] = useState(false);
+  const [save, setSave] = useState(true);
   const [reminders, setReminders] = useState(true);
   const [biometric, setBiometric] = useState(true);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/" });
+  }
 
   return (
     <AppShell mood="neutral">
@@ -32,8 +41,8 @@ function SettingsPage() {
           Your feelings belong to you.
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground text-pretty">
-          Lumi was built so you never have to wonder where your moments go. Everything runs
-          privately on your device unless you choose otherwise.
+          Your camera image is read on your device and never uploaded — only the resulting mood is
+          saved to your account, so your dashboard can show your history.
         </p>
       </header>
 
@@ -45,6 +54,21 @@ function SettingsPage() {
           No images. No recordings. No selling your data. Ever.
         </p>
       </div>
+
+      {user && (
+        <div className="mt-6 flex items-center justify-between rounded-3xl bg-surface p-5 shadow-neu">
+          <div>
+            <p className="text-xs text-muted-foreground">Signed in as</p>
+            <p className="mt-0.5 text-sm font-semibold">{user.email}</p>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-1.5 rounded-full bg-muted px-4 py-2 text-xs font-medium text-foreground hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Sign out
+          </button>
+        </div>
+      )}
 
       {/* Settings list */}
       <div className="mt-6 space-y-3">
@@ -58,7 +82,7 @@ function SettingsPage() {
         <SettingRow
           icon={Cloud}
           title="Save mood history"
-          desc="Keep an encrypted log of check-ins to see patterns."
+          desc="Keep a log of check-ins to see patterns on your dashboard."
           checked={save}
           onChange={setSave}
         />
