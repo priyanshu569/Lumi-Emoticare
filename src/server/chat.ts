@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 
 const chatInputSchema = z.object({
-  mood: z.enum(["happy", "sad", "angry", "neutral", "calm"]),
+  mood: z.enum(["happy", "sad", "angry", "neutral", "calm", "fearful", "disgusted", "surprised"]),
   messages: z
     .array(
       z.object({

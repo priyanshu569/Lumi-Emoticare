@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 
-type Mood = "happy" | "sad" | "angry" | "calm" | "neutral";
+type Mood = "happy" | "sad" | "angry" | "calm" | "neutral" | "fearful" | "disgusted" | "surprised";
 
 const moodVar: Record<Mood, string> = {
   happy: "var(--mood-happy)",
@@ -9,6 +9,9 @@ const moodVar: Record<Mood, string> = {
   angry: "var(--mood-angry)",
   calm: "var(--mood-calm)",
   neutral: "var(--mood-neutral)",
+  fearful: "var(--mood-fearful)",
+  disgusted: "var(--mood-disgusted)",
+  surprised: "var(--mood-surprised)",
 };
 
 export function AppShell({

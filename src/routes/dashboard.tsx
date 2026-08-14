@@ -28,19 +28,25 @@ export const Route = createFileRoute("/dashboard")({
   ),
 });
 
-type Mood = "happy" | "sad" | "angry" | "neutral";
-const MOODS: Mood[] = ["happy", "sad", "angry", "neutral"];
+type Mood = "happy" | "sad" | "angry" | "neutral" | "fearful" | "disgusted" | "surprised";
+const MOODS: Mood[] = ["happy", "sad", "angry", "neutral", "fearful", "disgusted", "surprised"];
 const MOOD_LABEL: Record<Mood, string> = {
   happy: "Happy",
   sad: "Low",
   angry: "Tense",
   neutral: "Neutral",
+  fearful: "Anxious",
+  disgusted: "Uneasy",
+  surprised: "Surprised",
 };
 const MOOD_INTENSITY: Record<Mood, number> = {
   happy: 0.85,
   neutral: 0.55,
   sad: 0.3,
   angry: 0.35,
+  fearful: 0.3,
+  disgusted: 0.3,
+  surprised: 0.6,
 };
 const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -129,7 +135,15 @@ function Dashboard() {
   }
 
   // Distribution over the fetched window.
-  const counts: Record<Mood, number> = { happy: 0, sad: 0, angry: 0, neutral: 0 };
+  const counts: Record<Mood, number> = {
+    happy: 0,
+    sad: 0,
+    angry: 0,
+    neutral: 0,
+    fearful: 0,
+    disgusted: 0,
+    surprised: 0,
+  };
   for (const e of entries) counts[e.mood]++;
   const total = entries.length;
   const distribution = MOODS.map((mood) => ({

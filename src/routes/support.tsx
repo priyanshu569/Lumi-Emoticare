@@ -9,7 +9,9 @@ import { LumiChat } from "@/components/tools/LumiChat";
 import { BookOpen, Music2, Wind, MessageCircleHeart, PhoneCall, Quote } from "lucide-react";
 import { z } from "zod";
 
-const moodSchema = z.enum(["happy", "sad", "angry", "neutral", "calm"]).catch("neutral");
+const moodSchema = z
+  .enum(["happy", "sad", "angry", "neutral", "calm", "fearful", "disgusted", "surprised"])
+  .catch("neutral");
 
 export const Route = createFileRoute("/support")({
   validateSearch: (search) => ({ mood: moodSchema.parse((search as { mood?: string }).mood) }),
@@ -34,6 +36,9 @@ const headlines: Record<string, string> = {
   angry: "Let's release a little pressure",
   calm: "Use this quiet beautifully",
   neutral: "A few small kindnesses for you",
+  fearful: "Let's steady things together",
+  disgusted: "Let's clear some space",
+  surprised: "Let's take a breath and land",
 };
 
 type ToolKey = "breathing" | "freewrite" | "soundscape" | "chat";
@@ -78,11 +83,7 @@ function SupportPage() {
   const [activeTool, setActiveTool] = useState<ToolKey | null>(null);
 
   return (
-    <AppShell
-      mood={
-        mood === "happy" ? "happy" : mood === "angry" ? "angry" : mood === "sad" ? "sad" : "calm"
-      }
-    >
+    <AppShell mood={mood}>
       <header className="pt-4">
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Just for you</p>
         <h1 className="mt-2 font-display text-3xl leading-tight text-balance">

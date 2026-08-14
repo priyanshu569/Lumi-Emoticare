@@ -43,6 +43,9 @@
   --color-mood-angry: var(--mood-angry);
   --color-mood-calm: var(--mood-calm);
   --color-mood-neutral: var(--mood-neutral);
+  --color-mood-fearful: var(--mood-fearful);
+  --color-mood-disgusted: var(--mood-disgusted);
+  --color-mood-surprised: var(--mood-surprised);
 
   --shadow-soft: var(--shadow-soft);
   --shadow-neu: var(--shadow-neu);
@@ -85,6 +88,9 @@
   --mood-angry: oklch(0.7 0.11 30); /* soft warm terracotta */
   --mood-calm: oklch(0.82 0.07 170); /* sage mint */
   --mood-neutral: oklch(0.78 0.04 300); /* gentle lavender */
+  --mood-fearful: oklch(0.65 0.08 290); /* muted violet-grey, uneasy */
+  --mood-disgusted: oklch(0.68 0.09 135); /* murky olive green */
+  --mood-surprised: oklch(0.8 0.15 350); /* vivid pink, startled */
 
   /* Soft, layered shadows for neumorphic feel */
   --shadow-soft: 0 8px 30px -12px oklch(0.5 0.05 30 / 0.18);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Send } from "lucide-react";
 import { sendChatMessage } from "@/server/chat";
 
-type Mood = "happy" | "sad" | "angry" | "neutral" | "calm";
+type Mood = "happy" | "sad" | "angry" | "neutral" | "calm" | "fearful" | "disgusted" | "surprised";
 type Message = { role: "user" | "assistant"; content: string };
 
 export function LumiChat({ mood }: { mood: Mood }) {

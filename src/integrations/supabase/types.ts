@@ -12,21 +12,21 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
-          mood: "happy" | "sad" | "angry" | "neutral";
+          mood: "happy" | "sad" | "angry" | "neutral" | "fearful" | "disgusted" | "surprised";
           confidence: number | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
-          mood: "happy" | "sad" | "angry" | "neutral";
+          mood: "happy" | "sad" | "angry" | "neutral" | "fearful" | "disgusted" | "surprised";
           confidence?: number | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           user_id?: string;
-          mood?: "happy" | "sad" | "angry" | "neutral";
+          mood?: "happy" | "sad" | "angry" | "neutral" | "fearful" | "disgusted" | "surprised";
           confidence?: number | null;
           created_at?: string;
         };

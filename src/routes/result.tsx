@@ -3,7 +3,9 @@ import { AppShell } from "@/components/AppShell";
 import { ArrowRight, RefreshCw } from "lucide-react";
 import { z } from "zod";
 
-const moodSchema = z.enum(["happy", "sad", "angry", "neutral"]).catch("neutral");
+const moodSchema = z
+  .enum(["happy", "sad", "angry", "neutral", "fearful", "disgusted", "surprised"])
+  .catch("neutral");
 const confidenceSchema = z.coerce.number().min(0).max(1).optional().catch(undefined);
 
 export const Route = createFileRoute("/result")({
@@ -46,6 +48,24 @@ const responses = {
     body: "You seem steady right now. That's its own kind of beautiful. Want to use this calm to set a small intention for the day?",
     emoji: "🌿",
     accent: "calm" as const,
+  },
+  fearful: {
+    title: "You might be feeling on edge.",
+    body: "Uncertainty is uncomfortable, and that's a normal thing to carry. Let's slow things down together — a grounding breath can help the edge soften.",
+    emoji: "🌫️",
+    accent: "fearful" as const,
+  },
+  disgusted: {
+    title: "Something's sitting wrong with you.",
+    body: "That reaction is worth listening to, not pushing away. Want a moment to name what's bothering you, or just let it pass?",
+    emoji: "🍃",
+    accent: "disgusted" as const,
+  },
+  surprised: {
+    title: "Something caught you off guard.",
+    body: "That's a lot to take in all at once. Take a beat to let it land before deciding what it means.",
+    emoji: "✨",
+    accent: "surprised" as const,
   },
 };
 

@@ -23,23 +23,21 @@ export const Route = createFileRoute("/scan")({
   ),
 });
 
-type Mood = "happy" | "sad" | "angry" | "neutral";
-const MOODS: Mood[] = ["happy", "sad", "angry", "neutral"];
+type Mood = "happy" | "sad" | "angry" | "neutral" | "fearful" | "disgusted" | "surprised";
+const MOODS: Mood[] = ["happy", "sad", "angry", "neutral", "fearful", "disgusted", "surprised"];
 const SCAN_DURATION_MS = 3200;
 const SAMPLE_INTERVAL_MS = 250;
 
-// face-api.js reports 7 expressions; we fold the ones we don't have a
-// dedicated mood/response for into "neutral" rather than inventing new moods.
+// face-api.js reports these 7 expressions directly — each is its own mood.
 function bucketExpressions(expressions: Record<string, number>): Record<Mood, number> {
   return {
     happy: expressions.happy ?? 0,
     sad: expressions.sad ?? 0,
     angry: expressions.angry ?? 0,
-    neutral:
-      (expressions.neutral ?? 0) +
-      (expressions.fearful ?? 0) +
-      (expressions.disgusted ?? 0) +
-      (expressions.surprised ?? 0),
+    neutral: expressions.neutral ?? 0,
+    fearful: expressions.fearful ?? 0,
+    disgusted: expressions.disgusted ?? 0,
+    surprised: expressions.surprised ?? 0,
   };
 }
 
@@ -100,7 +98,15 @@ function ScanPage() {
 
       setStatus("scanning");
 
-      const totals: Record<Mood, number> = { happy: 0, sad: 0, angry: 0, neutral: 0 };
+      const totals: Record<Mood, number> = {
+        happy: 0,
+        sad: 0,
+        angry: 0,
+        neutral: 0,
+        fearful: 0,
+        disgusted: 0,
+        surprised: 0,
+      };
       let samples = 0;
       const start = Date.now();
 
@@ -167,13 +173,13 @@ function ScanPage() {
           </p>
         </section>
 
-        <div className="mt-10 grid grid-cols-2 gap-3">
+        <div className="mt-10 grid grid-cols-3 gap-3">
           {MOODS.map((mood) => (
             <button
               key={mood}
               onClick={() => saveAndGo(mood, null)}
               disabled={status === "saving"}
-              className="rounded-3xl bg-surface py-8 text-sm font-medium capitalize shadow-neu transition hover:bg-muted disabled:opacity-60"
+              className="rounded-3xl bg-surface py-6 text-xs font-medium capitalize shadow-neu transition hover:bg-muted disabled:opacity-60"
             >
               {mood}
             </button>
@@ -288,7 +294,7 @@ function ScanPage() {
         </p>
 
         {(status === "camera-error" || status === "no-face") && (
-          <div className="mt-5 grid grid-cols-4 gap-2">
+          <div className="mt-5 grid grid-cols-3 gap-2">
             {MOODS.map((mood) => (
               <button
                 key={mood}
