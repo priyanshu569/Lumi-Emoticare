@@ -36,9 +36,10 @@ confirmation and password-reset links point at the wrong place.
 **Camera**: `/scan` requests camera access and needs HTTPS (or `localhost`) to work — this is a
 browser requirement for `getUserMedia`, not something this app can bypass.
 
-**Chat**: "Talk it out with Lumi" on the Support page calls Claude (Anthropic API) from a server
-function — set `ANTHROPIC_API_KEY` (see `.env.example`) for it to work. Without it, the other
-Support tools (breathing, journal, soundscape, crisis resources) still work normally.
+**Chat**: "Talk it out with Lumi" on the Support page calls Google's Gemini API from a server
+function — set `GEMINI_API_KEY` (see `.env.example`, free tier at
+[aistudio.google.com/apikey](https://aistudio.google.com/apikey)) for it to work. Without it, the
+other Support tools (breathing, journal, soundscape, crisis resources) still work normally.
 
 ## Build
 
