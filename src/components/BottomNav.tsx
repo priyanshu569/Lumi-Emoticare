@@ -14,7 +14,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-4 left-1/2 z-40 w-[min(92vw,420px)] -translate-x-1/2 rounded-full border border-border/60 bg-surface/85 px-2 py-2 shadow-soft backdrop-blur-xl"
+      className="fixed bottom-4 left-1/2 z-40 w-[min(92vw,420px)] -translate-x-1/2 transform-gpu rounded-full border border-border/60 bg-surface/85 px-2 py-2 shadow-soft backdrop-blur-xl will-change-transform"
     >
       <ul className="flex items-center justify-between">
         {items.map(({ to, label, icon: Icon }) => {
