@@ -2,7 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/use-auth";
+import { useLocalSetting } from "@/hooks/use-local-setting";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  isBiometricAvailable,
+  registerBiometricCredential,
+  clearBiometricCredential,
+} from "@/lib/biometric-lock";
 import { Lock, Eye, BellRing, Trash2, Cloud, Fingerprint, ShieldCheck, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
@@ -23,14 +29,96 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [onDevice, setOnDevice] = useState(true);
-  const [save, setSave] = useState(true);
-  const [reminders, setReminders] = useState(true);
-  const [biometric, setBiometric] = useState(true);
+  const [onDevice, setOnDevice] = useLocalSetting("lumi_on_device_detection", true);
+  const [save, setSave] = useLocalSetting("lumi_save_history", true);
+  const [reminders, setReminders] = useLocalSetting("lumi_daily_reminder", false);
+  const [biometric, setBiometric] = useLocalSetting("lumi_biometric_lock", false);
+  const [settingError, setSettingError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
     navigate({ to: "/" });
+  }
+
+  async function handleReminderToggle(next: boolean) {
+    setSettingError(null);
+    if (next) {
+      if (typeof Notification === "undefined") {
+        setSettingError("This browser doesn't support notifications.");
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        setSettingError("Notification permission was denied, so reminders can't turn on.");
+        return;
+      }
+    }
+    setReminders(next);
+  }
+
+  async function handleBiometricToggle(next: boolean) {
+    setSettingError(null);
+    if (next) {
+      if (!user) return;
+      const available = await isBiometricAvailable();
+      if (!available) {
+        setSettingError("Face ID / fingerprint unlock isn't available on this device.");
+        return;
+      }
+      try {
+        await registerBiometricCredential(user.id, user.email ?? "");
+        setBiometric(true);
+      } catch {
+        setSettingError("Couldn't set up biometric lock. Try again.");
+      }
+    } else {
+      clearBiometricCredential();
+      setBiometric(false);
+    }
+  }
+
+  async function handleExport() {
+    if (!user) return;
+    setExporting(true);
+    try {
+      const [moodEntries, journalEntries] = await Promise.all([
+        supabase.from("mood_entries").select("mood, confidence, created_at").eq("user_id", user.id),
+        supabase.from("journal_entries").select("body, created_at").eq("user_id", user.id),
+      ]);
+      const payload = {
+        exported_at: new Date().toISOString(),
+        account_email: user.email,
+        mood_entries: moodEntries.data ?? [],
+        journal_entries: journalEntries.data ?? [],
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lumi-data-export.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleDeleteEverything() {
+    if (!user) return;
+    if (!window.confirm("Delete all your check-ins and journal entries? This can't be undone.")) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await Promise.all([
+        supabase.from("mood_entries").delete().eq("user_id", user.id),
+        supabase.from("journal_entries").delete().eq("user_id", user.id),
+      ]);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -75,7 +163,7 @@ function SettingsPage() {
         <SettingRow
           icon={Eye}
           title="On-device emotion detection"
-          desc="The camera reads expressions locally and forgets instantly."
+          desc="The camera reads expressions locally. Turn off to always pick your mood by hand."
           checked={onDevice}
           onChange={setOnDevice}
         />
@@ -89,38 +177,50 @@ function SettingsPage() {
         <SettingRow
           icon={BellRing}
           title="Gentle daily reminder"
-          desc="A soft nudge at 8pm — never pushy, easy to mute."
+          desc="A soft nudge at 8pm while Lumi is open in a tab."
           checked={reminders}
-          onChange={setReminders}
+          onChange={handleReminderToggle}
         />
         <SettingRow
           icon={Fingerprint}
           title="Lock with Face ID"
-          desc="Add a private layer before opening Lumi."
+          desc="Verify it's you before your check-ins are shown on this device."
           checked={biometric}
-          onChange={setBiometric}
+          onChange={handleBiometricToggle}
         />
       </div>
 
+      {settingError && <p className="mt-3 text-center text-xs text-destructive">{settingError}</p>}
+
       {/* Data controls */}
       <div className="mt-6 rounded-3xl bg-surface p-2 shadow-neu">
-        <button className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition hover:bg-muted">
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition hover:bg-muted disabled:opacity-60"
+        >
           <span className="grid h-10 w-10 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
             <Lock className="h-4 w-4" />
           </span>
           <div className="flex-1">
-            <p className="text-sm font-semibold">Export my data</p>
+            <p className="text-sm font-semibold">{exporting ? "Preparing…" : "Export my data"}</p>
             <p className="text-xs text-muted-foreground">
               Download everything Lumi knows about you.
             </p>
           </div>
         </button>
-        <button className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition hover:bg-muted">
+        <button
+          onClick={handleDeleteEverything}
+          disabled={deleting}
+          className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition hover:bg-muted disabled:opacity-60"
+        >
           <span className="grid h-10 w-10 place-items-center rounded-2xl bg-destructive/10 text-destructive">
             <Trash2 className="h-4 w-4" />
           </span>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-destructive">Delete everything</p>
+            <p className="text-sm font-semibold text-destructive">
+              {deleting ? "Deleting…" : "Delete everything"}
+            </p>
             <p className="text-xs text-muted-foreground">Erase your history. No questions asked.</p>
           </div>
         </button>

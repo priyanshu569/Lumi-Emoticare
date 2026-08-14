@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { RequireAuth } from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/use-auth";
+import { useLocalSetting } from "@/hooks/use-local-setting";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera, ScanFace, ShieldCheck, X } from "lucide-react";
 
@@ -45,6 +46,8 @@ function bucketExpressions(expressions: Record<string, number>): Record<Mood, nu
 function ScanPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [onDeviceEnabled] = useLocalSetting("lumi_on_device_detection", true);
+  const [saveHistory] = useLocalSetting("lumi_save_history", true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -64,14 +67,14 @@ function ScanPage() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
 
-    if (user) {
+    if (user && saveHistory) {
       const { error } = await supabase
         .from("mood_entries")
         .insert({ user_id: user.id, mood, confidence });
       if (error) console.error("Failed to save mood entry:", error.message);
     }
 
-    navigate({ to: "/result", search: { mood } });
+    navigate({ to: "/result", search: { mood, confidence: confidence ?? undefined } });
   }
 
   async function startScan() {
@@ -143,6 +146,42 @@ function ScanPage() {
   }
 
   const scanning = status === "scanning" || status === "loading-models" || status === "saving";
+
+  if (!onDeviceEnabled) {
+    return (
+      <AppShell mood="neutral" hideNav>
+        <header className="flex items-center justify-between pt-2">
+          <button
+            onClick={() => navigate({ to: "/" })}
+            aria-label="Close"
+            className="grid h-10 w-10 place-items-center rounded-full bg-surface/80 text-foreground shadow-soft backdrop-blur"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </header>
+
+        <section className="mt-10 text-center">
+          <h1 className="font-display text-3xl text-balance">How are you feeling?</h1>
+          <p className="mt-2 text-sm text-muted-foreground text-pretty">
+            Camera detection is off in Settings — pick how you're feeling instead.
+          </p>
+        </section>
+
+        <div className="mt-10 grid grid-cols-2 gap-3">
+          {MOODS.map((mood) => (
+            <button
+              key={mood}
+              onClick={() => saveAndGo(mood, null)}
+              disabled={status === "saving"}
+              className="rounded-3xl bg-surface py-8 text-sm font-medium capitalize shadow-neu transition hover:bg-muted disabled:opacity-60"
+            >
+              {mood}
+            </button>
+          ))}
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell mood="neutral" hideNav>

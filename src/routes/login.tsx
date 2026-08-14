@@ -18,12 +18,13 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmSent, setConfirmSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -37,7 +38,13 @@ function LoginPage() {
     setSubmitting(true);
 
     try {
-      if (mode === "signin") {
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setResetSent(true);
+      } else if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         navigate({ to: "/" });
@@ -65,16 +72,38 @@ function LoginPage() {
             <Heart className="h-6 w-6" fill="currentColor" />
           </div>
           <h1 className="mt-4 font-display text-3xl text-balance">
-            {mode === "signin" ? "Welcome back" : "Let's get you set up"}
+            {mode === "signin"
+              ? "Welcome back"
+              : mode === "signup"
+                ? "Let's get you set up"
+                : "Reset your password"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground text-pretty">
             {mode === "signin"
               ? "Sign in to see your mood history."
-              : "Your check-ins will be saved to your account, privately."}
+              : mode === "signup"
+                ? "Your check-ins will be saved to your account, privately."
+                : "We'll email you a link to set a new password."}
           </p>
         </div>
 
-        {confirmSent ? (
+        {resetSent ? (
+          <div className="soft-card p-6 text-center">
+            <p className="font-display text-lg">Check your inbox</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We sent a password reset link to <strong>{email}</strong>.
+            </p>
+            <button
+              onClick={() => {
+                setResetSent(false);
+                setMode("signin");
+              }}
+              className="mt-5 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-glow"
+            >
+              Back to sign in
+            </button>
+          </div>
+        ) : confirmSent ? (
           <div className="soft-card p-6 text-center">
             <p className="font-display text-lg">Check your inbox</p>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -105,19 +134,21 @@ function LoginPage() {
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
             </div>
-            <div className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3.5 shadow-neu">
-              <Lock className="h-4 w-4 text-muted-foreground" />
-              <input
-                type="password"
-                required
-                minLength={6}
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </div>
+            {mode !== "reset" && (
+              <div className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3.5 shadow-neu">
+                <Lock className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </div>
+            )}
 
             {error && <p className="text-center text-xs text-destructive">{error}</p>}
 
@@ -126,21 +157,53 @@ function LoginPage() {
               disabled={submitting}
               className="w-full rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition disabled:opacity-70"
             >
-              {submitting ? "One moment…" : mode === "signin" ? "Sign in" : "Create account"}
+              {submitting
+                ? "One moment…"
+                : mode === "signin"
+                  ? "Sign in"
+                  : mode === "signup"
+                    ? "Create account"
+                    : "Send reset link"}
             </button>
+
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setMode("reset");
+                }}
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+              >
+                Forgot password?
+              </button>
+            )}
 
             <button
               type="button"
               onClick={() => {
                 setError(null);
-                setMode(mode === "signin" ? "signup" : "signin");
+                setMode(mode === "signup" ? "signin" : "signup");
               }}
               className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
             >
-              {mode === "signin"
-                ? "New here? Create an account"
-                : "Already have an account? Sign in"}
+              {mode === "signup"
+                ? "Already have an account? Sign in"
+                : "New here? Create an account"}
             </button>
+
+            {mode === "reset" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setMode("signin");
+                }}
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+              >
+                Back to sign in
+              </button>
+            )}
           </form>
         )}
 

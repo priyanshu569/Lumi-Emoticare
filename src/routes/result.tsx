@@ -4,9 +4,13 @@ import { ArrowRight, RefreshCw } from "lucide-react";
 import { z } from "zod";
 
 const moodSchema = z.enum(["happy", "sad", "angry", "neutral"]).catch("neutral");
+const confidenceSchema = z.coerce.number().min(0).max(1).optional().catch(undefined);
 
 export const Route = createFileRoute("/result")({
-  validateSearch: (search) => ({ mood: moodSchema.parse(search.mood) }),
+  validateSearch: (search) => ({
+    mood: moodSchema.parse((search as { mood?: string }).mood),
+    confidence: confidenceSchema.parse((search as { confidence?: unknown }).confidence),
+  }),
   head: () => ({
     meta: [
       { title: "Your check-in — Lumi" },
@@ -46,7 +50,7 @@ const responses = {
 };
 
 function ResultPage() {
-  const { mood } = Route.useSearch();
+  const { mood, confidence } = Route.useSearch();
   const r = responses[mood];
 
   return (
@@ -69,18 +73,26 @@ function ResultPage() {
           <span>Detected mood</span>
           <span className="font-medium capitalize text-foreground">{mood}</span>
         </div>
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: "82%",
-              background: `linear-gradient(90deg, color-mix(in oklab, var(--mood-current) 70%, transparent), var(--mood-current))`,
-            }}
-          />
-        </div>
-        <p className="mt-3 text-[11px] text-muted-foreground">
-          This is just a gentle guess — you know yourself best.
-        </p>
+        {confidence !== undefined ? (
+          <>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${Math.round(confidence * 100)}%`,
+                  background: `linear-gradient(90deg, color-mix(in oklab, var(--mood-current) 70%, transparent), var(--mood-current))`,
+                }}
+              />
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              This is just a gentle guess — you know yourself best.
+            </p>
+          </>
+        ) : (
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            You picked this one yourself — no camera guess needed.
+          </p>
+        )}
       </div>
 
       <div className="mt-8 space-y-3">
