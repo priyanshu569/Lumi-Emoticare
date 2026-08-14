@@ -155,20 +155,26 @@ function SupportPage() {
             </p>
           </div>
         </div>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <a
             href="tel:988"
-            className="flex-1 rounded-full bg-primary px-3 py-2 text-center text-[11px] font-medium text-primary-foreground"
+            className="rounded-full bg-primary px-3 py-2 text-center text-[11px] font-medium text-primary-foreground"
           >
             Call 988 (US)
+          </a>
+          <a
+            href="tel:18005990019"
+            className="rounded-full bg-primary px-3 py-2 text-center text-[11px] font-medium text-primary-foreground"
+          >
+            KIRAN (India)
           </a>
           <a
             href="https://findahelpline.com"
             target="_blank"
             rel="noreferrer"
-            className="flex-1 rounded-full bg-muted px-3 py-2 text-center text-[11px] font-medium text-foreground"
+            className="col-span-2 rounded-full bg-muted px-3 py-2 text-center text-[11px] font-medium text-foreground"
           >
-            Outside the US
+            Somewhere else
           </a>
         </div>
       </div>
